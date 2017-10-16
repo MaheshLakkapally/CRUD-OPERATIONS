@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html data-ng-app="cms">
+
+<head>
+    <title>Customer Managment Application - AngularJS</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.js"></script>
+    <script src="http://unpkg.com/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <style type="text/css">
+    ul li {
+        display: inline-block;
+    }
+    
+    .rTable {
+        display: table;
+        width: 100%;
+    }
+    
+    .rTableRow {
+        display: table-row;
+    }
+    
+    .rTableHeading {
+        display: table-header-group;
+        background-color: #ddd;
+    }
+    
+    .rTableCell,
+    .rTableHead {
+        display: table-cell;
+        padding: 3px 10px;
+        border: 1px solid #999999;
+    }
+    
+    .rTableHeading {
+        display: table-header-group;
+        background-color: #ddd;
+        font-weight: bold;
+    }
+    
+    .rTableFoot {
+        display: table-footer-group;
+        font-weight: bold;
+        background-color: #ddd;
+    }
+    
+    .rTableBody {
+        display: table-row-group;
+    }
+    </style>
+</head>
+<header>
+    <div>
+        <ul>
+            <li>
+                <a ui-sref="home"> Home </a>
+            </li>
+            <li>
+                <a ui-sref="customers"> Customers</a>
+            </li>
+        </ul>
+    </div>
+</header>
+<article>
+    <section>
+        <ui-view> </ui-view>
+    </section>
+</article>
+<footer>
+    <div>
+        <hr/> @ValleySoft 2017</div>
+</footer>
+
+<body>
+</body>
+<script type="text/javascript">
+"use strict"
+var app = angular.module("cms", ['ui.router']);
+
+app.config(function($urlRouterProvider, $stateProvider) {
+    $urlRouterProvider.otherwise('/home');
+
+    $stateProvider.state('home', {
+        url: '/home',
+        templateUrl: 'home.html'
+    });
+    $stateProvider.state('customers', {
+        url: '/customers',
+        templateUrl: 'customers.html',
+        controller: 'listController as listC'
+    });
+    $stateProvider.state('editCustomer', {
+        url: '/editCustomer',
+        templateUrl: 'editCustomer.html',
+        controller: 'editController as editC'
+    });
+
+
+});
+
+app.controller("editController", function($state, customerService) {
+    var that = this;
+
+    that.oneCustomer = customerService.getCurrentRecord();
+
+    that.startEditProcess = function(id) {
+        var result = customerService.getCustomerDetails(id);
+
+        result.then(function(response) {
+            that.oneCustomer = response.data;
+            console.log("oneCustomer=" + JSON.stringify(that.oneCustomer));
+            customerService.setCurrentRecord(that.oneCustomer);
+            $state.go("editCustomer");
+        });
+    };
+
+    that.updateCustomer = function() {
+
+        var result = customerService.postCustomerRecord(that.oneCustomer);
+        result.then(function(response) {
+            $state.go("customers");
+        });
+
+    }
+});
+
+app.controller("listController", function(customerService) {
+    var that = this;
+    that.customers = {};
+    that.oneCustomer = {};
+
+    customerService.getCustomersList().then(
+        function(response) {
+            console.log("in response handling..");
+            that.customers = response.data.contactList;
+            console.log("in response handling.." + JSON.stringify(that.customers));
+        });
+
+
+
+
+
+});
+
+app.service("customerService", function($http) {
+    this.oneCustomer = {};
+
+    this.getCustomersList = function() {
+        return $http.get("/contactsList");
+    };
+
+    this.getCustomerDetails = function(id) {
+        return $http.get("/getContact?id=" + id);
+    };
+
+    this.postCustomerRecord = function(record) {
+        return $http.post("/updateContact", record);
+    };
+
+    this.setCurrentRecord = function(record) {
+        this.oneCustomer = record;
+    };
+
+    this.getCurrentRecord = function() {
+        return this.oneCustomer;
+    };
+});
+</script>
+
+</html>

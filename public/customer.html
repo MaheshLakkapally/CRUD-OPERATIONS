@@ -1,0 +1,67 @@
+[3:31 PM, 4/5/2017] Valley.Gopi:
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Customer-management-using-angular</title>
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js"></script>
+<script src="http://unpkg.com/angular-ui-router/release/angular-ui-router.min.js"></script>
+<script type="text/javascript" src="customer.js"></script>
+
+<body data-ng-app="customer">
+    <div style="background-color: black; color:red; padding: 20px;">
+        <h2>Customer Management Application</h2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a ui-sref="#">Customers Management</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a ui-sref="customers">Customers</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a ui-sref="about">About</a>&nbsp;&nbsp;&nbsp;&nbsp;
+        <a ui-sref="addform">Addform</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+    <section>
+        <ui-view></ui-view>
+    </section>
+    <hr>
+    <footer>
+        @Online shopping-All rights Reserved-@Copyrights 2017
+    </footer>
+</body>
+
+</html>
+<script>
+var app = angular.module('customer', ['ui.router']);
+app.config(function($urlRouterProvider, $stateProvider) {
+    $urlRouterProvider.otherwise('/addform');
+    $stateProvider.state('home', {
+        url: '/home',
+        templateUrl: 'home.html',
+    });
+    $stateProvider.state('customers', {
+        url: '/customers',
+        templateUrl: 'customers.html'
+    });
+    $stateProvider.state('customers.contactList', {
+        url: '/contactList',
+        templateUrl: 'contactList.html'
+    });
+    $stateProvider.state('customers.newContact', {
+        url: '/newContact',
+        templateUrl: 'newContact.html'
+    });
+    $stateProvider.state('addform', {
+        url: '/addform',
+        templateUrl: 'addform.html',
+    });
+    app.service('contactservice', function($http) {
+        this.getContacts = function() {
+            var data = $http.get('/contactsList');
+            return data;
+        }
+    });
+});
+app.controller('contactController', ['$scope', 'contactservice', function($scope, contactservice) {
+    contactservice.getContacts().then(function(response) {
+        $scope.users = response.data.contactList;
+        console.log(JSON.stringify(response.data));
+    });
+}]);
+</script>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html data-ng-app="contacts">
+
+<head>
+    <title>Customermanagement.com</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.js"></script>
+    <script src="http://unpkg.com/angular-ui-router/release/angular-ui-router.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <li><img src="images/photo.jpg" height="100" width="200"></li>
+                <a class="navbar-brand" href="#"><b>CONTACTS APPLICATION</b></a>
+            </div>
+            <header>
+                <div>
+                    <a ui-sref="home">Home</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a ui-sref="Contactslist">Contactslist</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a ui-sref="Addcontact">Addcontact</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a ui-sref="Login">Login</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </div>
+                <br/>
+            </header>
+        </div>
+    </nav>
+    <section>
+        <ui-view>
+            <img align="center" class="mySlides" src="images/cm.jpg" width="100%" height="100%" />
+        </ui-view>
+    </section>
+</body>
+<script type="text/javascript">
+var app = angular.module('contacts', ['ui.router']);
+app.controller('homeController', ['$scope', 'contactservice', '$state', function($scope, contactservice, $state) {
+    $scope.contact = {};
+    contactservice.getContacts().then(function(response) {
+        $scope.users = response.data.contactList;
+    });
+
+    $scope.saveContact = function() {
+        contactservice.postContacts($scope.contact).then(function(response) {
+            $scope.users = response.data.contactsList;
+            console.log(response.data);
+            $state.go("Contactslist");
+        });
+    }
+    $scope.deleteContact = function(id) {
+        contactservice.delContacts($scope.contact).then(function(response) {
+            $scope.users = response.data.contactsList;
+            console.log(response.data);
+        });
+    }
+    $scope.editContacts = function(id) {
+        contactservice.editContacts($scope.contact).then(function(response) {
+            $scope.contact = response.data;
+            console.log(response.data);
+        });
+    }
+}]);
+
+
+app.config(function($urlRouterProvider, $stateProvider) {
+
+    $stateProvider.state('home', {
+        url: '/home',
+        templateUrl: 'home.html',
+        controller: 'homeController'
+    });
+    $stateProvider.state('Contactslist', {
+        url: '/Contactslist',
+        templateUrl: 'Contactslist.html',
+        controller: 'homeController'
+    });
+    $stateProvider.state('Addcontact', {
+        url: '/Addcontact',
+        templateUrl: 'Addcontact.html',
+        controller: 'homeController'
+    });
+    $stateProvider.state('Login', {
+        url: '/Login',
+        templateUrl: 'Login.html',
+        controller: 'homeController'
+    });
+});
+
+app.service('contactservice', function($http) {
+    this.getContacts = function() {
+            var data = $http.get('/contactsList');
+            return data;
+        },
+        this.postContacts = function(data) {
+            console.log(data);
+            var data = $http.post('/addContact', data);
+            return data;
+        }
+    this.delContacts = function(data) {
+        var data = $http.get('/deleteContact', data);
+        return data;
+    }
+    this.editContacts = function(id) {
+        console.log(id);
+        var data = $http.get('/getContact?id=' + id);
+        return data;
+    }
+});
+</script>
+
+</html>
